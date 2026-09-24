@@ -1,0 +1,57 @@
+# Versao do Docker Compose
+version: '3.8'
+
+# Servicos (containers que vao rodar)
+services:
+  # Nome do servico: postgres
+  postgres:
+    # Imagem Docker a usar
+    # postgres:16-alpine = PostgreSQL versao 16, versao "alpine" (mais leve)
+    image: postgres:16-alpine
+    
+    # Variaveis de ambiente (configuracao do PostgreSQL)
+    environment:
+      # Usuario padrao do PostgreSQL
+      POSTGRES_USER: postgres
+      
+      # Senha do usuario
+      POSTGRES_PASSWORD: postgres
+      
+      # Nome do banco de dados a criar
+      POSTGRES_DB: global_finance
+    
+    # Mapeamento de portas
+    # "5432:5432" = porta_maquina:porta_container
+    # Deixa o PostgreSQL acessivel em localhost:5432
+    ports:
+      - "5432:5432"
+    
+    # Volumes (armazenamento persistente)
+    # postgres_data = pasta virtual onde o banco guarda os dados
+    # /var/lib/postgresql/data = pasta dentro do container
+    # Sem volume, ao parar o container, os dados eram perdidos
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    
+    # Health check (verifica se o container esta saudavel)
+    healthcheck:
+      # Comando para verificar
+      # pg_isready = verifica se PostgreSQL esta respondendo
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      
+      # Verifica a cada 10 segundos
+      interval: 10s
+      
+      # Timeout de 5 segundos
+      timeout: 5s
+      
+      # Tenta 5 vezes antes de marcar como unhealthy
+      retries: 5
+
+# Definicao de volumes (armazenamento)
+volumes:
+  # postgres_data = volume criado para o PostgreSQL
+  # Permite persistencia de dados entre restarts
+  postgres_data:
+
+  

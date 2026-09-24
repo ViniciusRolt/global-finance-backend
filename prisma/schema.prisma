@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  senha     String
+  nome      String
+  criadoEm  DateTime   @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  contas       Account[]
+  transacoes   Transaction[]
+
+  @@map("users")
+}
+
+model Account {
+  id        String     @id @default(cuid())
+  userId    String
+  banco     String
+  moeda     String
+  saldo     Float      @default(0)
+  criadoEm  DateTime   @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  usuario      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transacoes   Transaction[]
+
+  @@index([userId])
+  @@map("accounts")
+}
+
+model ExchangeRate {
+  id        String   @id @default(cuid())
+  data      DateTime @default(now())
+  moedaBase String
+  moedaAlvo String
+  taxa      Float
+  criadoEm  DateTime @default(now())
+
+  @@index([data])
+  @@map("exchange_rates")
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  contaId     String
+  userId      String
+  valor       Float
+  categoria   String
+  descricao   String?
+  data        DateTime @default(now())
+  tipo        String
+  criadoEm    DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  usuario     User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account     Account @relation(fields: [contaId], references: [id], onDelete: Cascade)
+
+  @@index([contaId])
+  @@index([userId])
+  @@index([data])
+  @@map("transactions")
+}
